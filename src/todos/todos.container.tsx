@@ -1,20 +1,26 @@
 import React, { Component, FormEvent, ChangeEvent } from "react";
-import { observer } from "mobx-react";
+import { observer, inject } from "mobx-react";
 
 import { RootStore } from "../store";
 import { observable, action } from "mobx";
 import { TodosList } from "./todos-list.component";
 
 interface ITodosContainerProps {
-  store: RootStore;
+  rootStore?: RootStore;
 }
 
+@inject('rootStore')
 @observer
 export class TodosContainer extends Component<ITodosContainerProps> {
   @observable newTodoTitle: string = "";
 
+  // necessary in order to preserve proper typing when using @inject
+  private get store(): RootStore {
+    return this.props.rootStore as RootStore;
+  }
+
   public handleFormSubmit(event: FormEvent): void {
-    this.props.store.todoStore.addTodo({
+    this.store.todoStore.addTodo({
       description: this.newTodoTitle,
       finished: false,
     });
@@ -37,18 +43,18 @@ export class TodosContainer extends Component<ITodosContainerProps> {
 
   @action
   public toggleFinished(id: number): void {
-    this.props.store.todoStore.editTodo(id, {
-      finished: !this.props.store.todoStore.getTodosEntity()[id].finished,
+    this.store.todoStore.editTodo(id, {
+      finished: !this.store.todoStore.getTodosEntity()[id].finished,
     });
   }
 
   @action
   public delete(id: number): void {
-    this.props.store.todoStore.removeTodo(id);
+    this.store.todoStore.removeTodo(id);
   }
 
   public render() {
-    const todos = this.props.store.todoStore.getTodos();
+    const todos = this.store.todoStore.getTodos();
 
     return (
       <div>
